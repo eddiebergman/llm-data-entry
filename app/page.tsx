@@ -1,113 +1,209 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React from "react";
+import NavBar from "./navbar";
+import Chat from "./chat";
+import UsernamePasswordInput from "./usernamePasswordInput";
+import { PLACEHOLDERS, MAKE_IT_A_DIALOGUE_VALUE } from "./constants";
+import ChatLog from "./chatlog";
+import { v4 as uuidv4 } from "uuid";
+
+const FAKE_FIRST_UUID = uuidv4();
+const FAKE_CHAT_MESSAGES: Array<ChatMessages> = [
+  {
+    uuid: FAKE_FIRST_UUID,
+    title: "Some fake chat",
+    messages: ["hi", "hello", "world"],
+    status: "submitted",
+    datestring: new Date().toISOString(),
+    submissionLocation: "internal",
+  },
+  {
+    uuid: uuidv4(),
+    title: "Some other fake chat",
+    messages: ["other", "dother"],
+    status: "create",
+    datestring: new Date().toISOString(),
+    submissionLocation: "external",
+  },
+  {
+    uuid: uuidv4(),
+    title: "Last other fake chat",
+    messages: ["other", "dother"],
+    status: "updated",
+    datestring: new Date().toISOString(),
+    submissionLocation: null,
+  },
+];
+
+const fakeChatMessagesMap: Map<UUID, ChatMessages> = new Map();
+for (const entry of FAKE_CHAT_MESSAGES) {
+  fakeChatMessagesMap.set(entry.uuid, entry);
+}
+
+export type UUID = string;
+export type Status = "submitted" | "create" | "updated";
+type SubmissionLocation = "internal" | "external";
+
+export interface ChatMessages {
+  uuid: UUID;
+  title: string;
+  messages: Array<string>;
+  status: Status;
+  datestring: string;
+  submissionLocation: SubmissionLocation | null;
+}
+
+export function createNewChat(): ChatMessages {
+  return {
+    uuid: uuidv4(),
+    title: "",
+    messages: ["", ""],
+    status: "create",
+    datestring: new Date().toISOString(),
+    submissionLocation: null,
+  };
+}
+
+export type ChatLogEntryHighlight =
+  | "current"
+  | "search"
+  | "disabled"
+  | "updated";
+export interface ChatLogEntry {
+  title: string;
+  datestring: string;
+  highlight: ChatLogEntryHighlight;
+}
+
+function App() {
+  const [username, setUsername] = React.useState<string>("");
+  const [password, setPassword] = React.useState<string>("");
+
+  const [currentChatUUID, setCurrentChatUUID] =
+    React.useState<UUID>(FAKE_FIRST_UUID);
+  const [userChats, setUserChats] =
+    React.useState<Map<UUID, ChatMessages>>(fakeChatMessagesMap);
+  const [isChatLogOpen, setMenuOpen] = React.useState(false);
+  const [isLoginOpen, setLoginOpen] = React.useState(false);
+
+  function submitCurrentSelection(location: SubmissionLocation) {
+    makeAPICall()
+    console.log(location);
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <div>
+      <NavBar
+        onClearClicked={() => {
+          const newChats = new Map(userChats);
+
+          // TODO: delete from backend
+          newChats.delete(currentChatUUID);
+
+          const newChat = createNewChat();
+          newChats.set(newChat.uuid, newChat);
+          setUserChats(newChats)
+          setCurrentChatUUID(newChat.uuid)
+        }}
+        onNewChatClicked={() => {
+          const newChat = createNewChat()
+          const newUserChats = new Map(userChats)
+          newUserChats.set(newChat.uuid, newChat)
+          setUserChats(newUserChats)
+          setCurrentChatUUID(newChat.uuid)
+        }}
+        onSubmitExternalClicked={() => submitCurrentSelection("external")}
+        onSubmitInternalClicked={() => submitCurrentSelection("internal")}
+        onMenuBarClicked={() => setMenuOpen(!isChatLogOpen)}
+        onUserProfileClicked={() => setLoginOpen(!isLoginOpen)}
+      />
+      <div className="flex flex-row h-screen">
+        {/* left drawer content */}
+        {isChatLogOpen ? (
+          <div className="bg-base-200 basis-1/2 mr-8">
+            <ChatLog
+              userChats={userChats}
+              onMenuItemClick={(e, entry) => {
+                const selectedChat = userChats.get(entry.uuid);
+                if (selectedChat === undefined) {
+                  console.error(`Could not find ${entry.title}!`);
+                } else {
+                  setCurrentChatUUID(entry.uuid);
+                }
+              }}
             />
-          </a>
+          </div>
+        ) : (
+          <div></div>
+        )}
+        {/* page content */}
+        <div className="container grow mx-auto mt-4">
+          <Chat
+            chat={userChats.get(currentChatUUID)!}
+            placeholders={PLACEHOLDERS}
+            makeItADialogueValue={MAKE_IT_A_DIALOGUE_VALUE}
+            onMsgChange={(msgIndex, e) => {
+              // Select
+              const selectedChat = userChats.get(currentChatUUID)!;
+
+              // Update
+              let newMessages = selectedChat.messages.slice();
+              newMessages[msgIndex] = e.target.value;
+              const newChat = { ...selectedChat, messages: newMessages };
+
+              // Set
+              const newUserChats = new Map(userChats);
+              newUserChats.set(currentChatUUID, newChat);
+              setUserChats(newUserChats);
+            }}
+            onNewMessageClick={() => {
+              // Select
+              const selectedChat = userChats.get(currentChatUUID)!;
+
+              // Update
+              let newMessages = [...selectedChat.messages, ""];
+              const newChat = { ...selectedChat, messages: newMessages };
+
+              // Set
+              const newUserChats = new Map(userChats);
+              newUserChats.set(currentChatUUID, newChat);
+              setUserChats(newUserChats);
+            }}
+            onTitleChange={(newTitle) => {
+              // Select
+              const selectedChat = userChats.get(currentChatUUID)!;
+
+              // Update
+              const newChat = { ...selectedChat, title: newTitle };
+
+              // Set
+              const newUserChats = new Map(userChats);
+              newUserChats.set(currentChatUUID, newChat);
+              setUserChats(newUserChats);
+            }}
+          />
         </div>
+        {/* right drawer content */}
+        {isLoginOpen ? (
+          <div className="bg-base-200 basis-1/3 ml-8">
+            <UsernamePasswordInput
+              username={username}
+              password={password}
+              onUsernameChanged={(e) => setUsername(e.target.value)}
+              onPasswordChanged={(e) => setPassword(e.target.value)}
+            />
+          </div>
+        ) : (
+          <div></div>
+        )}
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
+
+function Page() {
+  return <App />;
+}
+
+export default Page;
