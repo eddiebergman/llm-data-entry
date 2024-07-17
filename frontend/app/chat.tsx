@@ -7,10 +7,14 @@ interface ChatProps {
   placeholders: Array<string>;
   makeItADialogueValue: string;
   onChatChange: (chat: Chat) => void;
+  onNewChatClicked: () => void;
+  onSyncChatClicked: (chat: Chat) => void;
 }
 export default function ChatView({
   chat,
   onChatChange,
+  onNewChatClicked,
+  onSyncChatClicked,
   makeItADialogueValue,
   placeholders,
 }: ChatProps) {
@@ -65,17 +69,35 @@ export default function ChatView({
   );
 
   return (
-    <div>
-      <div className="bg-base-200 rounded-box">
-        <label className="input input-ghost flex items-center space-x-1">
-          <input
-            type="text"
-            className="grow"
-            value={chat.title}
-            onChange={(e) => onChatChange({ ...chat, title: e.target.value })}
-            placeholder="Question about registering late for exams"
-          />
-        </label>
+    <div className="w-full">
+      <div className="join w-full">
+        {chat.status === "updated" ? (
+          <button
+            className="join-item btn btn-warning"
+            onClick={() => onSyncChatClicked(chat)}
+          >
+            Sync
+          </button>
+        ) : (
+          <></>
+        )}
+        <div className="join-item w-full bg-base-200 rounded-box">
+          <label className="input input-ghost w-full flex items-center space-x-1">
+            <input
+              type="text"
+              className="grow w-full"
+              value={chat.title}
+              onChange={(e) => onChatChange({ ...chat, title: e.target.value })}
+              placeholder="Question about registering late for exams"
+            />
+          </label>
+        </div>
+        <button
+          className="join-item btn btn-success"
+          onClick={() => onNewChatClicked()}
+        >
+          New Chat
+        </button>
       </div>
       <div id="Chat">
         {msgs}

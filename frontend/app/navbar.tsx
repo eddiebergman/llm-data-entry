@@ -46,7 +46,7 @@ export default function NavBar({
         </button>
       </div>
       <div className="navbar-end">
-        <button className="btn btn-outline btn-sm">Feedback</button>
+        <button className="btn btn-outline btn-sm">Help</button>
       </div>
     </div>
   );
