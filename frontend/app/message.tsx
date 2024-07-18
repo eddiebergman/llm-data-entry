@@ -1,8 +1,6 @@
-import TextareaAutosize, {
-  TextareaAutosizeProps,
-} from "react-textarea-autosize";
+import ReactTextareaAutosize from "react-textarea-autosize";
 import { Role } from "./state";
-import { ReactElement } from "react";
+import { forwardRef, TextareaHTMLAttributes } from "react";
 
 // TODO: Figure out where to put and how to load
 export const USER_ICON = (
@@ -26,39 +24,40 @@ const LLM_ICON = (
   </svg>
 );
 
-export interface MessageProps<T> extends TextareaAutosizeProps {
-  msgID: T;
+export interface MessageProps
+  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  msgIndex: number;
   role: Role;
   showDelete: boolean;
-  onDeletePressed: (msgID: T) => void;
+  onDeletePressed: (msgIndex: number) => void;
 }
 
-export default function Msg<T>({
-  msgID,
-  role,
-  showDelete,
-  onDeletePressed,
-  ...props
-}: MessageProps<T>) {
+const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
+  { msgIndex, role, showDelete, onDeletePressed, ...props }: MessageProps,
+  ref,
+) {
   const deleteButton = (
     <button
       className="text-xs text-error underline"
       onClick={() => {
-        onDeletePressed(msgID);
+        onDeletePressed(msgIndex);
       }}
     >
       delete
     </button>
   );
+
   switch (role) {
     case "human": {
       return (
         <div className="flex justify-end">
           {showDelete ? deleteButton : <></>}
           <div className="flex flex-row chat chat-end ml-4 w-1/2">
-            <TextareaAutosize
+            {/* @ts-ignore*/}
+            <ReactTextareaAutosize
               autoFocus
-              className="chat-bubble chat-bubble-primary w-full"
+              ref={ref}
+              className="chat-bubble chat-bubble-primary w-full placeholder:italic"
               {...props}
             />
             <div className="chat-image avatar">
@@ -72,9 +71,11 @@ export default function Msg<T>({
       return (
         <div className="flex justify-start">
           <div className="flex flex-row-reverse chat chat-start mr-4 w-4/5">
-            <TextareaAutosize
+            {/* @ts-ignore*/}
+            <ReactTextareaAutosize
               autoFocus
-              className="chat-bubble chat-bubble-secondary w-full"
+              ref={ref}
+              className="chat-bubble chat-bubble-secondary w-full placeholder:italic"
               {...props}
             />
             <div className="chat-image avatar">
@@ -86,4 +87,5 @@ export default function Msg<T>({
       );
     }
   }
-}
+});
+export default Msg;

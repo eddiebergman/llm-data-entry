@@ -74,9 +74,12 @@ export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
   const titleStyle = selected
     ? "font-bold text-pretty text-lg"
     : "text-pretty text-lg";
+  const boxStyle = selected
+    ? "mt-4 bg-base-300 rounded p-1 flex flex-col"
+    : "mt-4 p-1 flex flex-col";
 
   return (
-    <div className="mt-4 ml-4 flex flex-col">
+    <div className={boxStyle}>
       <li>
         <a
           className="p-0 text-pretty"
@@ -85,7 +88,7 @@ export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
           <p className={titleStyle}>{chat.title}</p>
         </a>
       </li>
-      <div className="mt-2 flex flex-row justify-between">
+      <div className="flex flex-row justify-between">
         <div className="flex flex-row justify-start justify-self-center space-x-1">
           <button
             className={internal}

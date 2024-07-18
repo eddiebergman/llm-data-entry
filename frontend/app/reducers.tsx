@@ -1,19 +1,5 @@
-import { UUID, Chat, AppState } from "./state";
-import { v4 as uuidv4 } from "uuid";
-
-export function createNewChat(): Chat {
-  return {
-    uuid: uuidv4(),
-    title: "Untitled",
-    messages: [
-      { content: "", role: "human" },
-      { content: "", role: "pretend-bot" },
-    ],
-    status: "created",
-    datestring: new Date().toISOString(),
-    submissionLocation: null,
-  };
-}
+import { UUID, Chat, AppState, createNewChat } from "./state";
+import { sortedByDate } from "./sidebar/datesort";
 
 export interface SetCurrentChatAction {
   type: "set-current";
@@ -43,7 +29,6 @@ export function stateReducer(
   state: AppState,
   action: StateReducerAction,
 ): AppState {
-  console.log(action);
   switch (action.type) {
     case "set-current": {
       return { ...state, currentChatUUID: action.uuid };
@@ -52,7 +37,7 @@ export function stateReducer(
       const newChat = createNewChat();
       return {
         currentChatUUID: newChat.uuid,
-        chats: [...state.chats, newChat],
+        chats: sortedByDate([...state.chats, newChat]),
       };
     }
     case "delete": {
@@ -85,14 +70,16 @@ export function stateReducer(
 
       return {
         currentChatUUID: newCurrentChatUUID,
-        chats: newChats,
+        chats: sortedByDate(newChats),
       };
     }
     case "update": {
       return {
         currentChatUUID: action.chat.uuid,
-        chats: state.chats.map((chat) =>
-          chat.uuid === action.chat.uuid ? action.chat : chat,
+        chats: sortedByDate(
+          state.chats.map((chat) =>
+            chat.uuid === action.chat.uuid ? action.chat : chat,
+          ),
         ),
       };
     }

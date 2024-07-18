@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { AppState, Chat } from "./state";
+import { sortedByDate } from "./sidebar/datesort";
 
 export const FAKE_FIRST_UUID = uuidv4();
 export const FAKE_USERKEY = uuidv4();
@@ -43,6 +44,6 @@ export const FAKE_CHAT_MESSAGES: Array<Chat> = [
 export function createFakeAppState(): AppState {
   return {
     currentChatUUID: FAKE_FIRST_UUID,
-    chats: FAKE_CHAT_MESSAGES,
+    chats: sortedByDate(FAKE_CHAT_MESSAGES),
   };
 }

@@ -33,3 +33,9 @@ export function groupByDate(
   });
   return groups;
 }
+
+export function sortedByDate(chats: Array<Chat>): Array<Chat> {
+  return chats.toSorted((a, b) =>
+    a.datestring < b.datestring ? 1 : a.datestring == b.datestring ? 0 : -1,
+  );
+}

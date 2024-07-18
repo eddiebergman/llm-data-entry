@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 export type UUID = string;
 export type Status = "created" | "synced" | "updated";
 export type SubmissionLocation = "internal" | "external";
@@ -34,4 +35,23 @@ export interface ChatLogEntry {
 export interface AppState {
   currentChatUUID: UUID;
   chats: Array<Chat>;
+}
+
+export function createNewChat(): Chat {
+  return {
+    uuid: uuidv4(),
+    title: "",
+    messages: [],
+    status: "created",
+    datestring: new Date().toISOString(),
+    submissionLocation: null,
+  };
+}
+
+export function createNewState(): AppState {
+  const newChat = createNewChat();
+  return {
+    currentChatUUID: newChat.uuid,
+    chats: [newChat],
+  };
 }
