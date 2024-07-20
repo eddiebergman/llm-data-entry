@@ -3,7 +3,7 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import ChatView from "./chat";
-import { PLACEHOLDERS, MAKE_IT_A_DIALOGUE_VALUE } from "./constants";
+import { PLACEHOLDERS } from "./constants";
 import Sidebar from "./sidebar/sidebar";
 import { createFakeAppState, FAKE_USERKEY } from "./fakeData";
 import { stateReducer } from "./reducers";
@@ -67,6 +67,7 @@ function App() {
   const sidebar = (
     <Sidebar
       userKey={userKey}
+      onNewChatClicked={() => dispatchState({ type: "new" })}
       userbarHandlers={{
         onKeyChange: (value) => setUserKey(value),
         onRefreshClicked: () => {
@@ -156,9 +157,11 @@ function App() {
 
   return (
     <div className="flex flex-row h-screen">
-      <div className="w-1/3 px-4 bg-base-200">{sidebar}</div>
+      <div className="w-2/5 bg-base-300 h-screen overflow-y-auto text-base-content overflow-x-clip">
+        {sidebar}
+      </div>
       <div className="flex w-full flex-col h-screen">
-        <main className="flex-1 p-4 overflow-y-auto">{chatView}</main>
+        <main className="flex-1 py-8 px-20 overflow-y-auto">{chatView}</main>
         <footer className="flex flex-row-reverse py-4">
           <div className="px-4">
             <Footer />

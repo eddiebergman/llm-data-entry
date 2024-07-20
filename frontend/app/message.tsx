@@ -1,6 +1,6 @@
 import ReactTextareaAutosize from "react-textarea-autosize";
 import { Role } from "./state";
-import { forwardRef, TextareaHTMLAttributes } from "react";
+import { forwardRef, ReactElement, TextareaHTMLAttributes } from "react";
 
 // TODO: Figure out where to put and how to load
 export const USER_ICON = (
@@ -30,62 +30,61 @@ export interface MessageProps
   role: Role;
   showDelete: boolean;
   onDeletePressed: (msgIndex: number) => void;
+  goNext: null | (() => void);
 }
 
 const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
-  { msgIndex, role, showDelete, onDeletePressed, ...props }: MessageProps,
+  {
+    msgIndex,
+    role,
+    showDelete,
+    onDeletePressed,
+    goNext,
+    ...props
+  }: MessageProps,
   ref,
 ) {
-  const deleteButton = (
-    <button
-      className="text-xs text-error underline"
-      onClick={() => {
-        onDeletePressed(msgIndex);
-      }}
-    >
-      delete
-    </button>
-  );
+  const isHuman = role === "human";
 
-  switch (role) {
-    case "human": {
-      return (
-        <div className="flex justify-end">
-          {showDelete ? deleteButton : <></>}
-          <div className="flex flex-row chat chat-end ml-4 w-1/2">
-            {/* @ts-ignore*/}
-            <ReactTextareaAutosize
-              autoFocus
-              ref={ref}
-              className="chat-bubble chat-bubble-primary w-full placeholder:italic"
-              {...props}
-            />
-            <div className="chat-image avatar">
-              <div className="mt-1 w-10"> {USER_ICON} </div>
-            </div>
+  return (
+    <div className={`flex ${isHuman ? "justify-end" : "justify-start"}`}>
+      <div className={`flex flex-col ${isHuman ? "w-1/2" : "w-4/5"}`}>
+        <div
+          className={`flex w-full chat ${isHuman ? "flex-row chat-end ml-4" : "flex-row-reverse chat-start mr-4"}`}
+        >
+          {/* @ts-ignore*/}
+          <ReactTextareaAutosize
+            autoFocus
+            ref={ref}
+            className={`chat-bubble w-full placeholder:italic ${isHuman ? "chat-bubble-primary" : "chat-bubble-secondary"}`}
+            {...props}
+          />
+          <div className="chat-image avatar">
+            <div className="mt-1 w-10"> {isHuman ? USER_ICON : LLM_ICON} </div>
           </div>
         </div>
-      );
-    }
-    case "pretend-bot": {
-      return (
-        <div className="flex justify-start">
-          <div className="flex flex-row-reverse chat chat-start mr-4 w-4/5">
-            {/* @ts-ignore*/}
-            <ReactTextareaAutosize
-              autoFocus
-              ref={ref}
-              className="chat-bubble chat-bubble-secondary w-full placeholder:italic"
-              {...props}
-            />
-            <div className="chat-image avatar">
-              <div className="mt-1 w-10"> {LLM_ICON} </div>
-            </div>
-          </div>
-          {showDelete ? deleteButton : <></>}
+        <div className="flex flex-row justify-center items-center space-x-2 pl-8">
+          {goNext && (
+            <button
+              onClick={() => goNext()}
+              className="text-xs text-info underline"
+            >
+              <div className="inline kbd kbd-xs">Enter</div> more messages...
+            </button>
+          )}
+          {showDelete && (
+            <button
+              className="text-xs text-error underline"
+              onClick={() => {
+                onDeletePressed(msgIndex);
+              }}
+            >
+              <div className="inline kbd kbd-xs">Delete</div>
+            </button>
+          )}
         </div>
-      );
-    }
-  }
+      </div>
+    </div>
+  );
 });
 export default Msg;

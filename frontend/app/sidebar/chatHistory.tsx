@@ -1,9 +1,13 @@
-import { IconContext } from "react-icons";
 import { UUID, Chat } from "../state";
 import { groupByDate } from "./datesort";
-import { MdDelete } from "react-icons/md";
-import { TbRefreshAlert } from "react-icons/tb";
-import { ReactElement } from "react";
+import { HiOutlineXCircle } from "react-icons/hi2";
+import { MdCloudSync } from "react-icons/md";
+import {
+  TbSquareRoundedLetterI,
+  TbSquareRoundedLetterIFilled,
+  TbSquareRoundedLetterE,
+  TbSquareRoundedLetterEFilled,
+} from "react-icons/tb";
 
 export interface ChatEntryHandlers {
   onInternalClicked: (entry: Chat) => void;
@@ -20,106 +24,59 @@ interface ChatEntryProps {
 }
 
 export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
-  let internal: string;
-  let external: string;
-  let syncIcon: ReactElement;
-  switch (chat.status) {
-    case "synced":
-      syncIcon = <></>;
-      switch (chat.submissionLocation) {
-        case "external":
-          internal = "text-xs underline";
-          external = "text-xs font-bold text-warning";
-          break;
-        case "internal":
-          internal = "text-xs font-bold text-info";
-          external = "text-xs underline";
-          break;
-        case null:
-          throw new Error(`Submitted with null location!`);
-      }
-      break;
-    case "updated":
-      syncIcon = (
-        <IconContext.Provider
-          value={{ style: { verticalAlign: "text-bottom" } }}
-        >
-          <TbRefreshAlert />
-        </IconContext.Provider>
-      );
-      switch (chat.submissionLocation) {
-        case "external":
-          internal = "text-xs underline";
-          external = "text-xs italic text-warning";
-          break;
-        case "internal":
-          internal = "text-xs italic text-info";
-          external = "text-xs underline";
-          break;
-        default:
-          throw new Error(
-            `Updated with unknown location! ${chat.submissionLocation}`,
-          );
-      }
-      break;
-    case "created":
-      syncIcon = <></>;
-      internal = "text-xs underline";
-      external = "text-xs underline";
-      break;
-    default:
-      throw new Error(`Unhandled case status: ${chat.status}`);
-  }
-
-  const titleStyle = selected
-    ? "font-bold text-pretty text-lg"
-    : "text-pretty text-lg";
-  const boxStyle = selected
-    ? "mt-4 bg-base-300 rounded p-1 flex flex-col"
-    : "mt-4 p-1 flex flex-col";
-
+  const bar = (
+    <span className={`ml-1 ${selected ? "text-3xl" : "text-lg"}`}>|</span>
+  );
   return (
-    <div className={boxStyle}>
+    <div className="flex flex-col space-y-1 px-4">
       <li>
-        <a
-          className="p-0 text-pretty"
-          onClick={() => handlers.onChatEntryClicked(chat)}
+        <div
+          className={`flex w-full flex-row space-x-1 justify-start items-center ${selected ? "border-b-2" : ""}`}
         >
-          <p className={titleStyle}>{chat.title}</p>
-        </a>
-      </li>
-      <div className="flex flex-row justify-between">
-        <div className="flex flex-row justify-start justify-self-center space-x-1">
-          <button
-            className={internal}
-            onClick={() => handlers.onInternalClicked(chat)}
-          >
-            Internal
-          </button>
-          <button
-            className={external}
-            onClick={() => handlers.onExternalClicked(chat)}
-          >
-            External
-          </button>
-          <button onClick={() => handlers.onSyncClicked(chat)}>
-            {syncIcon}
-          </button>
+          <div className="flex flex-grow items-center">
+            {chat.status === "updated" && (
+              <button>
+                <MdCloudSync
+                  className="text-lg text-warning flex-shrink-0"
+                  onClick={() => handlers.onSyncClicked(chat)}
+                />
+              </button>
+            )}
+            {chat.status === "updated" && bar}
+            {chat.submissionLocation === "internal" ? (
+              <TbSquareRoundedLetterIFilled className="text-lg flex-shrink-0" />
+            ) : (
+              <button>
+                <TbSquareRoundedLetterI
+                  className="text-lg flex-shrink-0"
+                  onClick={() => handlers.onInternalClicked(chat)}
+                />
+              </button>
+            )}
+            {chat.submissionLocation === "external" ? (
+              <TbSquareRoundedLetterEFilled className="text-lg flex-shrink-0" />
+            ) : (
+              <button>
+                <TbSquareRoundedLetterE
+                  className="text-lg flex-shrink-0"
+                  onClick={() => handlers.onExternalClicked(chat)}
+                />
+              </button>
+            )}
+            {bar}
+            <p
+              className={`ml-2 line-clamp-1 cursor-pointer  ${selected ? "font-bold text-2xl" : "text-xl hover:scale-[1.05]"} ${!chat.title && "text-info"}`}
+              onClick={() => handlers.onChatEntryClicked(chat)}
+            >
+              {chat.title ? chat.title : "<empty>"}
+            </p>
+          </div>
+          <HiOutlineXCircle
+            className="text-error text-lg cursor-pointer flex-shrink-0"
+            onClick={() => handlers.onDeleteClicked(chat)}
+          />
         </div>
-        <button
-          className="flex flex-row justify-end self-center"
-          onClick={() => handlers.onDeleteClicked(chat)}
-        >
-          <IconContext.Provider
-            value={{
-              color: "#fc2c03",
-              style: { verticalAlign: "text-bottom" },
-            }}
-          >
-            <MdDelete />
-          </IconContext.Provider>
-        </button>
-      </div>
+      </li>
     </div>
   );
 }
@@ -138,9 +95,9 @@ function ChatEntrySection({
   datestring,
 }: ChatEntrySectionProps) {
   return (
-    <details open className="w-full">
-      <summary className="w-full font-bold">{datestring}</summary>
-      <ul>
+    <details open>
+      <summary className="m-4 text-xl font-bold">{datestring}</summary>
+      <ul className="space-y-4">
         {chats.map((chat) => {
           return (
             <ChatEntry
@@ -152,6 +109,7 @@ function ChatEntrySection({
           );
         })}
       </ul>
+      <div className="divider"></div>
     </details>
   );
 }
@@ -170,7 +128,7 @@ export default function ChatHistory({
   const chatsByDate = groupByDate(chats, "day");
 
   return (
-    <ul className="menu w-full h-full rounded-box">
+    <ul className="flex flex-col rounded-box">
       {Object.entries(chatsByDate).map(([date, entries]) => (
         <ChatEntrySection
           key={date}

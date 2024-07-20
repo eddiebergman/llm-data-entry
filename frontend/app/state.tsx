@@ -41,7 +41,7 @@ export function createNewChat(): Chat {
   return {
     uuid: uuidv4(),
     title: "",
-    messages: [],
+    messages: [{ content: "", role: "human" }],
     status: "created",
     datestring: new Date().toISOString(),
     submissionLocation: null,
