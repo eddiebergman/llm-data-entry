@@ -15,12 +15,15 @@ import {
   TbSquareRoundedLetterE,
   TbSquareRoundedLetterEFilled,
 } from "react-icons/tb";
+import { CiEdit } from "react-icons/ci";
 import { StateContext } from "./state";
-import { PLACEHOLDERS } from "./constants";
 import { createChatEndpoint, putChatEndpoint } from "./api";
+import { useTranslation } from "react-i18next";
+import SubmitCards from "./submissionCards";
 
 export default function ChatView({ chat }: { chat: Chat }) {
-  const [_, dispatch] = useContext(StateContext);
+  const { t } = useTranslation();
+  const [state, dispatch] = useContext(StateContext);
   const textAreaRefs = useRef<Array<RefObject<HTMLTextAreaElement>>>(
     [...Array(chat.messages.length)].map(() => React.createRef()),
   );
@@ -59,12 +62,12 @@ export default function ChatView({ chat }: { chat: Chat }) {
     dispatch({ type: "update-chat", chat: updatedChat });
     if (chat.status == "created") {
       createChatEndpoint(updatedChat).catch(() => {
-        showError("Failed to sync, please try again later!");
+        showError(t("failedToSync"));
         dispatch({ type: "update-chat", chat: chat });
       });
     } else {
       putChatEndpoint(updatedChat).catch(() => {
-        showError("Failed to sync, please try again later!");
+        showError(t("failedToSync"));
         dispatch({ type: "update-chat", chat: chat });
       });
     }
@@ -114,7 +117,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
   const msgs = chat.messages.map((message, msgIndex) => (
     <div
       key={msgIndex}
-      className="mt-8 transform-transition focus-within:scale-[1.05] duration-300"
+      className="transform-transition focus-within:scale-[1.05] duration-300"
     >
       <Msg
         ref={textAreaRefs.current[msgIndex]}
@@ -155,7 +158,11 @@ export default function ChatView({ chat }: { chat: Chat }) {
           setChat(newChat);
         }}
         placeholder={
-          msgIndex < PLACEHOLDERS.length ? PLACEHOLDERS[msgIndex] : ""
+          msgIndex === 0
+            ? t("placeholderHuman1")
+            : msgIndex === 1
+              ? t("placeholderBot1")
+              : ""
         }
         // If last message
         showDelete={
@@ -167,10 +174,11 @@ export default function ChatView({ chat }: { chat: Chat }) {
   ));
 
   const title = (
-    <div className="w-full items-center transform-transition hover:scale-[1.05] focus-within:scale-[1.05] duration-300">
+    <label className="input border-b-2 border-gray-300 focus:border-blue-500 outline-none grow text-2xl space-x-1 w-full flex flex-row items-end py-2 transform-transition hover:scale-[1.05] focus-within:scale-[1.05] duration-300">
+      <CiEdit className="text-3xl text-slate-500" />
       <input
         type="text"
-        className="border-b-2 border-gray-300 focus:border-blue-500 outline-none grow text-2xl flex-1 w-full space-x-1"
+        className="grow"
         value={chat.title}
         onChange={(e) =>
           setChat({
@@ -193,9 +201,9 @@ export default function ChatView({ chat }: { chat: Chat }) {
             textAreaRefs.current[0].current?.focus();
           }
         }}
-        placeholder="Enter a title of your chat..."
+        placeholder={t("titlePlaceholder")}
       />
-    </div>
+    </label>
   );
 
   let syncButtonStyle: string = "";
@@ -215,12 +223,12 @@ export default function ChatView({ chat }: { chat: Chat }) {
       onClick={() => sync(chat.submissionLocation)}
     >
       <button
-        className={"flex flex-row btn btn-wide btn-sm btn-info btn-outline".concat(
+        className={"flex flex-row btn btn-block btn-sm btn-info btn-outline".concat(
           syncButtonStyle,
         )}
       >
         <MdCloudSync className={`inline text-lg`} />
-        <span>Chat was updated, click to sync</span>
+        <span>{t("chatUpdatedPleaseSync")}</span>
       </button>
     </div>
   );
@@ -242,7 +250,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
           ) : (
             <TbSquareRoundedLetterI className="text-lg" />
           )}
-          Internal
+          {t("internal")}
         </button>
         <button
           onClick={() => sync("external")}
@@ -253,14 +261,9 @@ export default function ChatView({ chat }: { chat: Chat }) {
           ) : (
             <TbSquareRoundedLetterE className="text-lg" />
           )}
-          External
+          {t("external")}
         </button>
-        {!chat.submissionLocation ? (
-          <label className="join-item pl-4 input-sm input input-bordered border-slate-300">
-            Done? Mark this chat as either containing internal or external
-            information. You can always update this later!
-          </label>
-        ) : (
+        {chat.submissionLocation && (
           <button
             onClick={() => {
               dispatch({ type: "update-chat", chat: chat });
@@ -268,10 +271,20 @@ export default function ChatView({ chat }: { chat: Chat }) {
             }}
             className="pl-4 join-item text-info underline input input-sm input-bordered border-slate-300 transition duration-300 hover:scale-125"
           >
-            Press <div className="inline kbd kbd-md">ctrl+m</div>
-            for a New Chat
+            {t("newChat")} <div className="inline kbd kbd-xs">ctrl+m</div>
           </button>
         )}
+      </div>
+    </div>
+  );
+
+  const showHelpMsg = !state.madeFirstSubmission && chat.messages.length === 1;
+  const helpMsg = (
+    <div
+      className={`flex w-full justify-center items-center ${showHelpMsg ? "transition-opacity duration-700 opacity-100" : "h-0 opacity-0"}`}
+    >
+      <div className="max-w-2xl text-left">
+        <p className="text-lg leading-relaxed">{t("initialHelpMessage1")}</p>
       </div>
     </div>
   );
@@ -280,18 +293,26 @@ export default function ChatView({ chat }: { chat: Chat }) {
   return (
     <div className="w-full">
       <div
-        className={`font-bold transition-opacity duration-700 ${showTitle ? "opacity-100" : "opacity-0"}`}
+        className={`font-bold ${showTitle ? "transition-opacity duration-700 opacity-100" : "opacity-0"}`}
       >
         {title}
       </div>
-      <div id="Chat">
+      <div id="Chat" className="space-y-8 mt-12">
         {chat.status === "updated" && clickToSyncButton}
         {msgs}
+        {helpMsg}
         {chat.messages.length > 1 && (
           <div
-            className={`mt-8 flex flex-col align-middle transition-opacity duration-700 ${showSubmit ? "opacity-100" : "opacity-0 h-0"}`}
+            className={`flex flex-col align-middle transition-opacity duration-700 ${showSubmit ? "opacity-100" : "opacity-0 h-0"}`}
           >
-            {submissionBar}
+            {chat.submissionLocation ? (
+              submissionBar
+            ) : (
+              <div>
+                <div className="divider divider-info"></div>
+                <SubmitCards submit={sync} />
+              </div>
+            )}
           </div>
         )}
       </div>

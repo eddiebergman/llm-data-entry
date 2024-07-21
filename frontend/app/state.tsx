@@ -36,6 +36,7 @@ export interface ChatLogEntry {
 
 export interface AppState {
   userkey: Userkey;
+  madeFirstSubmission: boolean;
   currentChatUUID: ChatUUID;
   chats: Map<ChatUUID, Chat>;
 }
@@ -90,6 +91,7 @@ export function createNewState(): AppState {
   chats.set(newChat.uuid, newChat);
 
   return {
+    madeFirstSubmission: false,
     userkey: newUserkey,
     currentChatUUID: newChat.uuid,
     chats: chats,
@@ -165,6 +167,7 @@ export function stateReducer(state: AppState, action: Action): AppState {
     case "new-chat": {
       const newChat = createNewChat(state.userkey);
       return {
+        madeFirstSubmission: true,
         userkey: state.userkey,
         currentChatUUID: newChat.uuid,
         chats: updateChats(state.chats, newChat),
@@ -177,6 +180,7 @@ export function stateReducer(state: AppState, action: Action): AppState {
         const newChat = createNewChat(state.userkey);
         chats = updateChats(chats, newChat);
         return {
+          madeFirstSubmission: true,
           userkey: state.userkey,
           currentChatUUID: newChat.uuid,
           chats: chats,
@@ -185,6 +189,7 @@ export function stateReducer(state: AppState, action: Action): AppState {
 
       const [chatuuid, _] = getFirstChat(chats);
       return {
+        madeFirstSubmission: true,
         userkey: state.userkey,
         currentChatUUID: chatuuid,
         chats: chats,
@@ -192,6 +197,9 @@ export function stateReducer(state: AppState, action: Action): AppState {
     }
     case "update-chat": {
       return {
+        madeFirstSubmission: action.chat.submissionLocation
+          ? true
+          : state.madeFirstSubmission,
         userkey: state.userkey,
         currentChatUUID: action.chat.uuid,
         chats: updateChats(state.chats, action.chat),
@@ -219,6 +227,7 @@ export function stateReducer(state: AppState, action: Action): AppState {
       }
 
       return {
+        madeFirstSubmission: true,
         userkey: action.userkey,
         currentChatUUID: newCurrentChatUUID,
         chats: chats,

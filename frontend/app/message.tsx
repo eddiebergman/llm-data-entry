@@ -1,6 +1,7 @@
 import ReactTextareaAutosize from "react-textarea-autosize";
 import { Role } from "./state";
 import { forwardRef, ReactElement, TextareaHTMLAttributes } from "react";
+import { useTranslation } from "react-i18next";
 
 // TODO: Figure out where to put and how to load
 export const USER_ICON = (
@@ -44,6 +45,7 @@ const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
   }: MessageProps,
   ref,
 ) {
+  const { t } = useTranslation();
   const isHuman = role === "user";
 
   return (
@@ -56,7 +58,7 @@ const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
           <ReactTextareaAutosize
             autoFocus
             ref={ref}
-            className={`chat-bubble w-full placeholder:italic ${isHuman ? "chat-bubble-primary" : "chat-bubble-secondary"}`}
+            className={`chat-bubble w-full placeholder:italic ${isHuman ? "chat-bubble-secondary" : "chat-bubble-primary"}`}
             {...props}
           />
           <div className="chat-image avatar">
@@ -69,7 +71,7 @@ const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
               onClick={() => goNext()}
               className="text-xs text-info underline"
             >
-              <div className="inline kbd kbd-xs">Enter</div> more messages...
+              {t("addMessage")} <div className="inline kbd kbd-xs">Enter</div>
             </button>
           )}
           {showDelete && (

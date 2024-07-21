@@ -1,6 +1,7 @@
-import './globals.css'
+import "./globals.css";
 
-import { DEFAULT_THEME } from './constants';
+const LIGHT_THEME = "mytheme";
+const DEFAULT_THEME = LIGHT_THEME;
 
 interface RootLayoutProps {
   children: React.ReactNode;

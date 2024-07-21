@@ -83,24 +83,24 @@ def delete_chat(chat: ChatDelete, db: Session = Depends(get_db)):
 @app.post("/feedback", response_model=FeedbackResponse)
 async def create_feedback(
     feedback: FeedbackCreate = Depends(),
-    screenshot: UploadFile = File(...),
+    screenshot: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
     db_feedback = services.create_feedback(db, feedback)
 
-    # Save screenshot
-    file_extension = os.path.splitext(screenshot.filename)[1]
-    file_name = f"{uuid.uuid4()}{file_extension}"
-    file_path = os.path.join(Settings.FILE_STORAGE_PATH, file_name)
+    if screenshot:  # Only process the screenshot if it's provided
+        file_extension = os.path.splitext(screenshot.filename)[1]
+        file_name = f"{uuid.uuid4()}-{db_feedback.id}-{file_extension}"
+        file_path = os.path.join(Settings.FILE_STORAGE_PATH, file_name)
 
-    try:
-        with open(file_path, "wb") as buffer:
-            content = await screenshot.read()
-            buffer.write(content)
-    except IOError:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to save screenshot",
-        )
+        try:
+            with open(file_path, "wb") as buffer:
+                content = await screenshot.read()
+                buffer.write(content)
+        except IOError:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to save screenshot",
+            )
 
     return db_feedback

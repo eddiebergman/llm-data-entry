@@ -2,6 +2,35 @@ import { v4 as uuidv4 } from "uuid";
 import { Chat, SubmissionLocation, Userkey } from "./state";
 const BASE_URL = process.env.NEXT_PUBLIC_API_ENDPOINT!;
 
+export const sendFeedbackEndpoint = async (
+  userkey: Userkey,
+  feedback: string,
+  image: File | null,
+): Promise<void> => {
+  console.log(userkey);
+  console.log(feedback);
+  console.log(image);
+  try {
+    const url = `${BASE_URL}/feedback?user_uuid=${encodeURIComponent(userkey)}&feedback=${encodeURIComponent(feedback)}`;
+
+    let options: RequestInit = { method: "POST" };
+    if (image) {
+      const formData = new FormData();
+      formData.append("screenshot", image);
+      options.body = formData;
+    }
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    return;
+  } catch (err) {
+    console.error("Error fetching chats:", err);
+    throw err;
+  }
+};
+
 export const getChatsEndpoint = async (userkey: Userkey): Promise<Chat[]> => {
   try {
     const response = await fetch(`${BASE_URL}/chat/all/${userkey}`, {
