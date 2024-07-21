@@ -9,9 +9,9 @@ export const FAKE_CHAT_MESSAGES: Array<Chat> = [
     uuid: FAKE_FIRST_UUID,
     title: "Some fake chat",
     messages: [
-      { content: "hi", role: "human" },
-      { content: "hello", role: "pretend-bot" },
-      { content: "me", role: "human" },
+      { content: "hi", role: "user" },
+      { content: "hello", role: "bot" },
+      { content: "me", role: "user" },
     ],
     status: "synced",
     datestring: new Date().toISOString(),
@@ -21,8 +21,8 @@ export const FAKE_CHAT_MESSAGES: Array<Chat> = [
     uuid: uuidv4(),
     title: "Some other fake chat",
     messages: [
-      { content: "hello", role: "human" },
-      { content: "world", role: "pretend-bot" },
+      { content: "hello", role: "user" },
+      { content: "world", role: "bot" },
     ],
     status: "created",
     datestring: new Date().toISOString(),
@@ -32,8 +32,8 @@ export const FAKE_CHAT_MESSAGES: Array<Chat> = [
     uuid: uuidv4(),
     title: "Last other fake chat",
     messages: [
-      { content: "other", role: "human" },
-      { content: "dther", role: "pretend-bot" },
+      { content: "other", role: "user" },
+      { content: "dther", role: "bot" },
     ],
     status: "updated",
     datestring: new Date().toISOString(),
@@ -43,6 +43,7 @@ export const FAKE_CHAT_MESSAGES: Array<Chat> = [
 
 export function createFakeAppState(): AppState {
   return {
+    userkey: FAKE_USERKEY,
     currentChatUUID: FAKE_FIRST_UUID,
     chats: sortedByDate(FAKE_CHAT_MESSAGES),
   };

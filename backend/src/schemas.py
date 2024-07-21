@@ -15,28 +15,30 @@ class ChatBase(BaseModel):
 
 
 class ChatCreate(ChatBase):
-    user_uuid: UUID4
+    user_uuid: str
+    chat_uuid: UUID4
     created_at: Optional[datetime] = None
 
 
 class ChatUpdate(ChatBase):
-    user_uuid: UUID4
+    user_uuid: str
     chat_uuid: UUID4
 
 
 class ChatResponse(ChatBase):
+    user_uuid: str
     chat_uuid: UUID4
     created_at: datetime
     updated_at: datetime
 
 
 class ChatDelete(BaseModel):
-    user_uuid: UUID4
+    user_uuid: str
     chat_uuid: UUID4
 
 
 class FeedbackCreate(BaseModel):
-    user_uuid: UUID4
+    user_uuid: str
     feedback: str
 
 

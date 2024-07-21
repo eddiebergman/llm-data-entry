@@ -8,8 +8,15 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from src.database import get_db, Base, engine
-from src.schemas import ChatCreate, ChatUpdate, ChatResponse, ChatDelete, FeedbackCreate, FeedbackResponse
-from src.services import get_all_chats, create_chat, update_chat, delete_chat, create_feedback
+from src.schemas import (
+    ChatCreate,
+    ChatUpdate,
+    ChatResponse,
+    ChatDelete,
+    FeedbackCreate,
+    FeedbackResponse,
+)
+from src import services
 from src.config import Settings, setup_logging
 
 Base.metadata.create_all(bind=engine)
@@ -25,12 +32,13 @@ origins = [
     "http://localhost:80",
     "http://localhost:3000",
     "http://frontend:80",
-    "http://frontend:3000",
+    "http://frontend:8000",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,39 +52,41 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-@app.get('/healthcheck', status_code=status.HTTP_200_OK, response_class=PlainTextResponse)
+@app.get(
+    "/healthcheck", status_code=status.HTTP_200_OK, response_class=PlainTextResponse
+)
 def healthcheck() -> PlainTextResponse:
     return PlainTextResponse(content="OK")
 
 
 @app.get("/chat/all/{user_uuid}", response_model=List[ChatResponse])
-def get_all_chats(user_uuid: uuid.UUID, db: Session = Depends(get_db)):
-    return get_all_chats(db, user_uuid)
+def get_all_chats(user_uuid: str, db: Session = Depends(get_db)):
+    return services.get_all_chats(db, user_uuid)
 
 
 @app.post("/chat/new", response_model=ChatResponse)
 def create_chat(chat: ChatCreate, db: Session = Depends(get_db)):
-    return create_chat(db, chat)
+    return services.create_chat(db, chat)
 
 
-@app.put("/chat/update", response_model=ChatResponse)
-def update_chat(chat: ChatUpdate, db: Session = Depends(get_db)):
-    return update_chat(db, chat)
+@app.put("/chat/update")
+def update_chat(chat: ChatUpdate, db: Session = Depends(get_db)) -> ChatResponse:
+    return services.update_chat(db, chat)
 
 
 @app.delete("/chat/delete", status_code=status.HTTP_204_NO_CONTENT)
 def delete_chat(chat: ChatDelete, db: Session = Depends(get_db)):
-    delete_chat(db, chat.chat_uuid, chat.user_uuid)
+    services.delete_chat(db, chat.chat_uuid, chat.user_uuid)
     return {"ok": True}
 
 
 @app.post("/feedback", response_model=FeedbackResponse)
 async def create_feedback(
-        feedback: FeedbackCreate = Depends(),
-        screenshot: UploadFile = File(...),
-        db: Session = Depends(get_db)
+    feedback: FeedbackCreate = Depends(),
+    screenshot: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
-    db_feedback = create_feedback(db, feedback)
+    db_feedback = services.create_feedback(db, feedback)
 
     # Save screenshot
     file_extension = os.path.splitext(screenshot.filename)[1]
@@ -88,6 +98,9 @@ async def create_feedback(
             content = await screenshot.read()
             buffer.write(content)
     except IOError:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to save screenshot")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save screenshot",
+        )
 
     return db_feedback

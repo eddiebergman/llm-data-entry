@@ -1,26 +1,26 @@
-import React, { ChangeEvent, RefObject, useEffect, useRef } from "react";
+import React, {
+  ChangeEvent,
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
+import { showError } from "./util";
 import Msg from "./message";
 import { MdCloudSync } from "react-icons/md";
-import { Chat, SubmissionLocation } from "./state";
+import { Chat, Role, SubmissionLocation } from "./state";
 import {
   TbSquareRoundedLetterI,
   TbSquareRoundedLetterIFilled,
   TbSquareRoundedLetterE,
   TbSquareRoundedLetterEFilled,
 } from "react-icons/tb";
+import { StateContext } from "./state";
+import { PLACEHOLDERS } from "./constants";
+import { createChatEndpoint, putChatEndpoint } from "./api";
 
-interface ChatHandlers {
-  onChatChange: (chat: Chat) => void;
-  onNewChatClicked: () => void;
-  onSyncChatClicked: (chat: Chat) => void;
-  onSubmit: (chat: Chat, location: SubmissionLocation) => void;
-}
-interface ChatProps {
-  chat: Chat;
-  handlers: ChatHandlers;
-  placeholders: Array<string>;
-}
-export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
+export default function ChatView({ chat }: { chat: Chat }) {
+  const [_, dispatch] = useContext(StateContext);
   const textAreaRefs = useRef<Array<RefObject<HTMLTextAreaElement>>>(
     [...Array(chat.messages.length)].map(() => React.createRef()),
   );
@@ -38,15 +38,47 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
     }
   }, [chat]);
 
+  function setChat(chat: Chat) {
+    dispatch({ type: "update-chat", chat: chat });
+  }
+
+  function sync(where: SubmissionLocation | null) {
+    if (!where) {
+      console.error(
+        "Should not have synced a chat with no submission location!",
+        chat,
+      );
+      return;
+    }
+    const updatedChat: Chat = {
+      ...chat,
+      status: "synced",
+      submissionLocation: where,
+    };
+
+    dispatch({ type: "update-chat", chat: updatedChat });
+    if (chat.status == "created") {
+      createChatEndpoint(updatedChat).catch(() => {
+        showError("Failed to sync, please try again later!");
+        dispatch({ type: "update-chat", chat: chat });
+      });
+    } else {
+      putChatEndpoint(updatedChat).catch(() => {
+        showError("Failed to sync, please try again later!");
+        dispatch({ type: "update-chat", chat: chat });
+      });
+    }
+  }
+
   function addNewMessage() {
-    handlers.onChatChange({
+    setChat({
       ...chat,
       messages: [...chat.messages, { role: newMsgRole, content: "" }],
     });
   }
 
   function deleteMessage(msgIx: number) {
-    handlers.onChatChange({
+    setChat({
       ...chat,
       messages: chat.messages.filter((_, index) => index !== msgIx),
     });
@@ -61,10 +93,10 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
     if (e.repeat) return;
 
     if (msgIndex === 0 && chat.title === "" && chat.messages.length === 1) {
-      handlers.onChatChange({
+      setChat({
         ...chat,
         title: chat.messages[0].content,
-        messages: [...chat.messages, { content: "", role: "pretend-bot" }],
+        messages: [...chat.messages, { content: "", role: "bot" }],
       });
       return;
     }
@@ -115,15 +147,15 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
           }
         }}
         onChange={(e: ChangeEvent<HTMLTextAreaElement>): void => {
-          const currentMsg = chat.messages[msgIndex];
-          chat.messages[msgIndex] = {
-            ...currentMsg,
-            content: e.target.value,
-          };
-          handlers.onChatChange(chat);
+          const newChat = { ...chat };
+          if (newChat.submissionLocation) {
+            newChat.status = "updated";
+          }
+          newChat.messages[msgIndex].content = e.target.value;
+          setChat(newChat);
         }}
         placeholder={
-          msgIndex < placeholders.length ? placeholders[msgIndex] : ""
+          msgIndex < PLACEHOLDERS.length ? PLACEHOLDERS[msgIndex] : ""
         }
         // If last message
         showDelete={
@@ -140,9 +172,13 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
         type="text"
         className="border-b-2 border-gray-300 focus:border-blue-500 outline-none grow text-2xl flex-1 w-full space-x-1"
         value={chat.title}
-        onChange={(e) => {
-          handlers.onChatChange({ ...chat, title: e.target.value });
-        }}
+        onChange={(e) =>
+          setChat({
+            ...chat,
+            title: e.target.value,
+            status: chat.submissionLocation ? "updated" : "created",
+          })
+        }
         onKeyDown={(e) => {
           if (e.key !== "Enter") {
             return;
@@ -176,7 +212,7 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
   const clickToSyncButton = (
     <div
       className="mt-4 w-full flex flex-row justify-center animate-pulse"
-      onClick={() => handlers.onSyncChatClicked(chat)}
+      onClick={() => sync(chat.submissionLocation)}
     >
       <button
         className={"flex flex-row btn btn-wide btn-sm btn-info btn-outline".concat(
@@ -189,7 +225,7 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
     </div>
   );
 
-  const newMsgRole = chat.messages.length % 2 === 0 ? "human" : "pretend-bot";
+  const newMsgRole: Role = chat.messages.length % 2 === 0 ? "user" : "bot";
 
   const showSubmit =
     chat.messages.length >= 2 && chat.messages[1].content.length > 0;
@@ -198,7 +234,7 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
     <div className="flex flex-row justify-center">
       <div className="join mt-4">
         <button
-          onClick={() => handlers.onSubmit(chat, "internal")}
+          onClick={() => sync("internal")}
           className={`join-item btn btn-info btn-sm ${chat.submissionLocation !== "internal" && "btn-outline transition hover:scale-125"}`}
         >
           {chat.submissionLocation === "internal" ? (
@@ -209,7 +245,7 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
           Internal
         </button>
         <button
-          onClick={() => handlers.onSubmit(chat, "external")}
+          onClick={() => sync("external")}
           className={`join-item btn btn-info btn-sm ${chat.submissionLocation !== "external" && "btn-outline transition hover:scale-125"}`}
         >
           {chat.submissionLocation === "external" ? (
@@ -226,7 +262,10 @@ export default function ChatView({ chat, handlers, placeholders }: ChatProps) {
           </label>
         ) : (
           <button
-            onClick={() => handlers.onNewChatClicked()}
+            onClick={() => {
+              dispatch({ type: "update-chat", chat: chat });
+              dispatch({ type: "new-chat" });
+            }}
             className="pl-4 join-item text-info underline input input-sm input-bordered border-slate-300 transition duration-300 hover:scale-125"
           >
             Press <div className="inline kbd kbd-md">ctrl+m</div>

@@ -1,5 +1,6 @@
-import { UUID, Chat } from "../state";
-import { groupByDate } from "./datesort";
+import { useContext } from "react";
+import { ChatUUID, Chat, StateContext, SubmissionLocation } from "../state";
+import { groupByDate, showError } from "../util";
 import { HiOutlineXCircle } from "react-icons/hi2";
 import { MdCloudSync } from "react-icons/md";
 import {
@@ -8,25 +9,52 @@ import {
   TbSquareRoundedLetterE,
   TbSquareRoundedLetterEFilled,
 } from "react-icons/tb";
-
-export interface ChatEntryHandlers {
-  onInternalClicked: (entry: Chat) => void;
-  onExternalClicked: (entry: Chat) => void;
-  onSyncClicked: (entry: Chat) => void;
-  onDeleteClicked: (entry: Chat) => void;
-  onChatEntryClicked: (entry: Chat) => void;
-}
+import { deleteChatEndpoint, putChatEndpoint } from "../api";
 
 interface ChatEntryProps {
   selected: boolean;
   chat: Chat;
-  handlers: ChatEntryHandlers;
 }
 
-export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
+export function ChatEntry({ selected, chat }: ChatEntryProps) {
+  const [_, dispatch] = useContext(StateContext);
+
+  function sync(where: SubmissionLocation | null) {
+    if (!where) {
+      console.error(
+        "Should not have synced a chat with no submission location!",
+        chat,
+      );
+      return;
+    }
+    const updatedChat: Chat = {
+      ...chat,
+      status: "synced",
+      submissionLocation: where,
+    };
+
+    dispatch({ type: "update-chat", chat: updatedChat });
+
+    putChatEndpoint(updatedChat).catch(() => {
+      showError("Failed to sync, please try again later!");
+      dispatch({ type: "update-chat", chat: chat });
+    });
+  }
+  function select() {
+    dispatch({ type: "set-current", uuid: chat.uuid });
+  }
+  function deleteChat() {
+    dispatch({ type: "delete-chat", uuid: chat.uuid });
+    deleteChatEndpoint(chat).catch(() => {
+      showError("Failed to delete chat remotely, please try again later!");
+      dispatch({ type: "update-chat", chat: chat });
+    });
+  }
+
   const bar = (
     <span className={`ml-1 ${selected ? "text-3xl" : "text-lg"}`}>|</span>
   );
+
   return (
     <div className="flex flex-col space-y-1 px-4">
       <li>
@@ -38,7 +66,7 @@ export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
               <button>
                 <MdCloudSync
                   className="text-lg text-warning flex-shrink-0"
-                  onClick={() => handlers.onSyncClicked(chat)}
+                  onClick={() => sync(chat.submissionLocation)}
                 />
               </button>
             )}
@@ -49,7 +77,7 @@ export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
               <button>
                 <TbSquareRoundedLetterI
                   className="text-lg flex-shrink-0"
-                  onClick={() => handlers.onInternalClicked(chat)}
+                  onClick={() => sync("internal")}
                 />
               </button>
             )}
@@ -59,21 +87,21 @@ export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
               <button>
                 <TbSquareRoundedLetterE
                   className="text-lg flex-shrink-0"
-                  onClick={() => handlers.onExternalClicked(chat)}
+                  onClick={() => sync("external")}
                 />
               </button>
             )}
             {bar}
             <p
               className={`ml-2 line-clamp-1 cursor-pointer  ${selected ? "font-bold text-2xl" : "text-xl hover:scale-[1.05]"} ${!chat.title && "text-info"}`}
-              onClick={() => handlers.onChatEntryClicked(chat)}
+              onClick={select}
             >
               {chat.title ? chat.title : "<empty>"}
             </p>
           </div>
           <HiOutlineXCircle
             className="text-error text-lg cursor-pointer flex-shrink-0"
-            onClick={() => handlers.onDeleteClicked(chat)}
+            onClick={deleteChat}
           />
         </div>
       </li>
@@ -82,18 +110,17 @@ export function ChatEntry({ selected, chat, handlers }: ChatEntryProps) {
 }
 
 interface ChatEntrySectionProps {
-  handlers: ChatEntryHandlers;
-  selectedChatUUID: UUID;
+  selectedChatUUID: ChatUUID;
   chats: Array<Chat>;
   datestring: string;
 }
 
 function ChatEntrySection({
-  handlers,
   selectedChatUUID,
   chats,
   datestring,
 }: ChatEntrySectionProps) {
+  // TODO: Sort by date here
   return (
     <details open>
       <summary className="m-4 text-xl font-bold">{datestring}</summary>
@@ -104,7 +131,6 @@ function ChatEntrySection({
               selected={chat.uuid === selectedChatUUID}
               key={chat.uuid}
               chat={chat}
-              handlers={handlers}
             />
           );
         })}
@@ -114,26 +140,17 @@ function ChatEntrySection({
   );
 }
 
-interface ChatHistoryProps {
-  handlers: ChatEntryHandlers;
-  chats: Array<Chat>;
-  selectedChatUUID: UUID;
-}
+export default function ChatHistory() {
+  const [state, _] = useContext(StateContext);
 
-export default function ChatHistory({
-  selectedChatUUID,
-  chats,
-  handlers,
-}: ChatHistoryProps) {
-  const chatsByDate = groupByDate(chats, "day");
+  const chatsByDate = groupByDate(state.chats, "day");
 
   return (
     <ul className="flex flex-col rounded-box">
       {Object.entries(chatsByDate).map(([date, entries]) => (
         <ChatEntrySection
           key={date}
-          selectedChatUUID={selectedChatUUID}
-          handlers={handlers}
+          selectedChatUUID={state.currentChatUUID}
           chats={entries}
           datestring={date}
         />

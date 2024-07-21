@@ -44,7 +44,7 @@ const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
   }: MessageProps,
   ref,
 ) {
-  const isHuman = role === "human";
+  const isHuman = role === "user";
 
   return (
     <div className={`flex ${isHuman ? "justify-end" : "justify-start"}`}>

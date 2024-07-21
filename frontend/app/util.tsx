@@ -1,11 +1,12 @@
 import { parseISO, format } from "date-fns";
+import { toast } from "react-toastify";
 
 // ChatGPT
-import { Chat } from "../state";
+import { Chat, ChatUUID } from "./state";
 
 // Function to group objects by a date part
 export function groupByDate(
-  chats: Array<Chat>,
+  chats: Map<ChatUUID, Chat>,
   datePart: "day" | "month" | "year",
 ): Record<string, Chat[]> {
   let groups: Record<string, Chat[]> = {};
@@ -31,11 +32,24 @@ export function groupByDate(
     // Add the object to the group
     groups[key].push(entry);
   });
+  Object.values(groups).forEach((values) => values.sort(dateSort));
   return groups;
 }
 
-export function sortedByDate(chats: Array<Chat>): Array<Chat> {
-  return chats.toSorted((a, b) =>
-    a.datestring < b.datestring ? 1 : a.datestring == b.datestring ? 0 : -1,
-  );
+function dateSort(a: Chat, b: Chat): -1 | 0 | 1 {
+  return a.datestring < b.datestring
+    ? 1
+    : a.datestring == b.datestring
+      ? 0
+      : -1;
+}
+
+export function showError(s: string) {
+  toast.error(s, {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: true,
+    closeOnClick: true,
+    theme: "light",
+  });
 }
