@@ -11,8 +11,6 @@ services:
         NEXT_TELEMETRY_DISABLED: 1
     ports:
       - 80:80
-    env_file:
-      - .env
     depends_on:
       - backend
 
@@ -30,8 +28,6 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./file_storage:/app/file_storage
-    env_file:
-      - .env
     environment:
       - DATABASE_URL=sqlite:////app/data/database.db
       - FILE_STORAGE_PATH=file_storage

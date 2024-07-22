@@ -4,10 +4,12 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_ENDPOINT!;
 export const sendFeedbackEndpoint = async (
   userkey: Userkey,
   feedback: string,
-  image: File | null,
+  image: File | null
 ): Promise<void> => {
   try {
-    const url = `${BASE_URL}/feedback?user_uuid=${encodeURIComponent(userkey)}&feedback=${encodeURIComponent(feedback)}`;
+    const url = `${BASE_URL}/feedback?user_uuid=${encodeURIComponent(
+      userkey
+    )}&feedback=${encodeURIComponent(feedback)}`;
 
     let options: RequestInit = { method: "POST" };
     if (image) {
