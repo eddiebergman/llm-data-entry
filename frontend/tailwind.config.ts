@@ -31,7 +31,6 @@ const config: Config = {
           "base-content": "#ffffff",
         },
       },
-      "winter",
     ],
   },
 };
