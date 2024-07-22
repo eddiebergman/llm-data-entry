@@ -4,11 +4,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_ENDPOINT!;
 export const sendFeedbackEndpoint = async (
   userkey: Userkey,
   feedback: string,
-  image: File | null,
+  image: File | null
 ): Promise<void> => {
   try {
     const url = `${BASE_URL}/feedback?user_uuid=${encodeURIComponent(
-      userkey,
+      userkey
     )}&feedback=${encodeURIComponent(feedback)}`;
 
     let options: RequestInit = { method: "POST" };
@@ -111,6 +111,10 @@ export const deleteChatEndpoint = async (chat: Chat): Promise<void> => {
     const response = await fetch(`${BASE_URL}/chat/delete`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_uuid: chat.userkey,
+        chat_uuid: chat.uuid,
+      }),
     });
     if (!response.ok) {
       throw new Error("Network response was not ok");

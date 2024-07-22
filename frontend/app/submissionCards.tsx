@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { TbSquareRoundedLetterI, TbSquareRoundedLetterE } from "react-icons/tb";
+import { TbSquareRoundedLetterI } from "react-icons/tb";
 
 export function CardInternal({ submit }: { submit: () => void }) {
   const { t } = useTranslation();

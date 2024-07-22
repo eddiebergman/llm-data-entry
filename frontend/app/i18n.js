@@ -21,9 +21,9 @@ i18n.use(initReactI18next).init({
         failedToRetrieveChats:
           "Failed to retrieve chats, please try again later!",
         placeholderHuman1: "Question...?",
-        placeholderBot1: "What would you like to see a good AI-chatbot reply?",
+        placeholderBot1: "What would you like to see a good AI-ChatBot reply?",
         initialHelpMessage1:
-          "The university of Freiburg would like to train an AI-chatbot to help answer questions about the university. This includes both publically accesible information but also information to help with internal processes. This web application is to help streamline that process. We'll help to walk you through this step-by-step!",
+          "The university of Freiburg would like to train an AI-ChatBot to help answer questions about the university! To do this, the university requires chat samples to make the AI-ChatBot as helpful as possible. There will be two chatbots, one for Internal use and one for External usage.\n\n Internal chats can include sensitive information about internal processes or generally any information that should only be known to university employees, for example, student enrollment processes, university internal policy or questions about employee forms.\n\n External chats include any information that is publically accessible and may be hard to find information on our websites, for example, replacing lost student cards, enrolling for exams or asking for offices responsible for specific queries.\n\n Enter a question below to get started! After hitting enter, you'll be asked for what an ideal response from an AI-Chatbot would look like. Once you're done, you can either extend that chat or be prompted which kind of chat it is! You can always, change this later or delete the chat if you like.",
         helpUserkey:
           "This key is used to save your chats. If you lose this, you can not access previous chats.\nYou may share this with others to see the same chat history!",
         feedbackSuccessToast: "Thanks for your feedback!",
@@ -55,9 +55,9 @@ i18n.use(initReactI18next).init({
           "(German) Failed to retrieve chats, please try again later!",
         placeholderHuman1: "(German) Question...?",
         placeholderBot1:
-          "(German) What would you like to see a good AI-chatbot reply?",
+          "(German) What would you like to see a good AI-ChatBot reply?",
         initialHelpMessage1:
-          "(German) The university of Freiburg would like to train an AI-chatbot to help answer questions about the university. This includes both publically accesible information but also information to help with internal processes. This web application is to help streamline that process. We'll help to walk you through this step-by-step!",
+          "(German) The university of Freiburg would like to train an AI-ChatBot to help answer questions about the university! To do this, the university requires chat samples to make the AI-ChatBot as helpful as possible. There will be two chatbots, one for Internal use and one for External usage.\n\n Internal chats can include sensitive information about internal processes or generally any information that should only be known to university employees, for example, student enrollment processes, university internal policy or questions about employee forms.\n\n External chats include any information that is publically accessible and may be hard to find information on our websites, for example, replacing lost student cards, enrolling for exams or asking for offices responsible for specific queries.\n\n Enter a question below to get started! After hitting enter, you'll be asked for what an ideal response from an AI-Chatbot would look like. Once you're done, you can either extend that chat or be prompted which kind of chat it is! You can always, change this later or delete the chat if you like.",
         helpUserkey:
           "(German) This key is used to save your chats. If you lose this, you can not access previous chats.\nYou may share this with others to see the same chat history!",
         feedbackSuccessToast: "(German) Thanks for your feedback!",

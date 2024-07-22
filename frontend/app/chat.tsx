@@ -25,7 +25,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
   const { t } = useTranslation();
   const [state, dispatch] = useContext(StateContext);
   const textAreaRefs = useRef<Array<RefObject<HTMLTextAreaElement>>>(
-    [...Array(chat.messages.length)].map(() => React.createRef()),
+    [...Array(chat.messages.length)].map(() => React.createRef())
   );
 
   // Auto-focus first message if it's the only one
@@ -42,14 +42,18 @@ export default function ChatView({ chat }: { chat: Chat }) {
   }, [chat]);
 
   function setChat(chat: Chat) {
-    dispatch({ type: "update-chat", chat: chat });
+    if (chat.status === "synced") {
+      dispatch({ type: "update-chat", chat: { ...chat, status: "updated" } });
+    } else {
+      dispatch({ type: "update-chat", chat: chat });
+    }
   }
 
   function sync(where: SubmissionLocation | null) {
     if (!where) {
       console.error(
         "Should not have synced a chat with no submission location!",
-        chat,
+        chat
       );
       return;
     }
@@ -89,7 +93,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
 
   function onEnterPressedInMsg(
     e: React.KeyboardEvent<HTMLTextAreaElement>,
-    msgIndex: number,
+    msgIndex: number
   ) {
     if (e.shiftKey || e.ctrlKey) return;
     e.preventDefault();
@@ -161,8 +165,8 @@ export default function ChatView({ chat }: { chat: Chat }) {
           msgIndex === 0
             ? t("placeholderHuman1")
             : msgIndex === 1
-              ? t("placeholderBot1")
-              : ""
+            ? t("placeholderBot1")
+            : ""
         }
         // If last message
         showDelete={
@@ -224,7 +228,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
     >
       <button
         className={"flex flex-row btn btn-block btn-sm btn-info btn-outline".concat(
-          syncButtonStyle,
+          syncButtonStyle
         )}
       >
         <MdCloudSync className={`inline text-lg`} />
@@ -243,7 +247,10 @@ export default function ChatView({ chat }: { chat: Chat }) {
       <div className="join mt-4">
         <button
           onClick={() => sync("internal")}
-          className={`join-item btn btn-info btn-sm ${chat.submissionLocation !== "internal" && "btn-outline transition hover:scale-125"}`}
+          className={`join-item btn btn-info btn-sm ${
+            chat.submissionLocation !== "internal" &&
+            "btn-outline transition hover:scale-125"
+          }`}
         >
           {chat.submissionLocation === "internal" ? (
             <TbSquareRoundedLetterIFilled className="text-lg" />
@@ -254,7 +261,10 @@ export default function ChatView({ chat }: { chat: Chat }) {
         </button>
         <button
           onClick={() => sync("external")}
-          className={`join-item btn btn-info btn-sm ${chat.submissionLocation !== "external" && "btn-outline transition hover:scale-125"}`}
+          className={`join-item btn btn-info btn-sm ${
+            chat.submissionLocation !== "external" &&
+            "btn-outline transition hover:scale-125"
+          }`}
         >
           {chat.submissionLocation === "external" ? (
             <TbSquareRoundedLetterEFilled className="text-lg" />
@@ -280,11 +290,14 @@ export default function ChatView({ chat }: { chat: Chat }) {
 
   const showHelpMsg = !state.madeFirstSubmission && chat.messages.length === 1;
   const helpMsg = (
-    <div
-      className={`flex w-full justify-center items-center ${showHelpMsg ? "transition-opacity duration-700 opacity-100" : "h-0 opacity-0"}`}
-    >
-      <div className="max-w-2xl text-left">
-        <p className="text-lg leading-relaxed">{t("initialHelpMessage1")}</p>
+    <div className="flex w-full justify-center items-center">
+      <div className="w-5/6 text-left">
+        <p
+          style={{ whiteSpace: " pre-wrap", wordWrap: "break-word" }}
+          className="text-lg leading-relaxed"
+        >
+          {t("initialHelpMessage1")}
+        </p>
       </div>
     </div>
   );
@@ -293,17 +306,23 @@ export default function ChatView({ chat }: { chat: Chat }) {
   return (
     <div className="w-full">
       <div
-        className={`font-bold ${showTitle ? "transition-opacity duration-700 opacity-100" : "opacity-0"}`}
+        className={`font-bold ${
+          showTitle
+            ? "transition-opacity duration-700 opacity-100"
+            : "opacity-0"
+        }`}
       >
         {title}
       </div>
+      {showHelpMsg && helpMsg}
       <div id="Chat" className="space-y-8 mt-12">
         {chat.status === "updated" && clickToSyncButton}
         {msgs}
-        {helpMsg}
         {chat.messages.length > 1 && (
           <div
-            className={`flex flex-col align-middle transition-opacity duration-700 ${showSubmit ? "opacity-100" : "opacity-0 h-0"}`}
+            className={`flex flex-col align-middle transition-opacity duration-700 ${
+              showSubmit ? "opacity-100" : "opacity-0 h-0"
+            }`}
           >
             {chat.submissionLocation ? (
               submissionBar
