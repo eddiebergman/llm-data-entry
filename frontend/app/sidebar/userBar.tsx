@@ -4,7 +4,6 @@ import { MdQuestionMark, MdCloudSync, MdCopyAll } from "react-icons/md";
 import { getChatsEndpoint } from "../api";
 import { Userkey, StateContext } from "../state";
 import { useTranslation } from "react-i18next";
-import Trans from "../trans";
 
 export default function UserBar() {
   const { t } = useTranslation();

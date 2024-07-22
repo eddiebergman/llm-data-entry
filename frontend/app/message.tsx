@@ -43,7 +43,7 @@ const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
     goNext,
     ...props
   }: MessageProps,
-  ref,
+  ref
 ) {
   const { t } = useTranslation();
   const isHuman = role === "user";
@@ -52,13 +52,19 @@ const Msg = forwardRef<HTMLTextAreaElement, MessageProps>(function Msg(
     <div className={`flex ${isHuman ? "justify-end" : "justify-start"}`}>
       <div className={`flex flex-col ${isHuman ? "w-1/2" : "w-4/5"}`}>
         <div
-          className={`flex w-full chat ${isHuman ? "flex-row chat-end ml-4" : "flex-row-reverse chat-start mr-4"}`}
+          className={`flex w-full chat ${
+            isHuman
+              ? "flex-row chat-end ml-4"
+              : "flex-row-reverse chat-start mr-4"
+          }`}
         >
           {/* @ts-ignore*/}
           <ReactTextareaAutosize
             autoFocus
             ref={ref}
-            className={`chat-bubble w-full placeholder:italic ${isHuman ? "chat-bubble-secondary" : "chat-bubble-primary"}`}
+            className={`chat-bubble w-full placeholder:italic ${
+              isHuman ? "chat-bubble-secondary" : "chat-bubble-primary"
+            }`}
             {...props}
           />
           <div className="chat-image avatar">
