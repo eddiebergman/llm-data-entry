@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_ENDPOINT: http://localhost:8000
+        NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - 80:80
+    env_file:
+      - .env
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    container_name: backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./file_storage:/app/file_storage
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:////app/data/database.db
+      - FILE_STORAGE_PATH=file_storage
+      - LOG_LEVEL=INFO
+      - LOG_FILE_PATH=/logs/app.log

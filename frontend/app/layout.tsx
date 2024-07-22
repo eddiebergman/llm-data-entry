@@ -9,7 +9,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" data-theme={DEFAULT_THEME}>
+    <html lang="de" data-theme={DEFAULT_THEME}>
       <body>
         <main>{children}</main>
       </body>
