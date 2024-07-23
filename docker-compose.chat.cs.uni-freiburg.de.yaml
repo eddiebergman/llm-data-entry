@@ -1,0 +1,35 @@
+services:
+  frontend:
+    container_name: frontend
+    restart: unless-stopped
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_ENDPOINT: ${BACKEND_URI:-https://chat.cs.uni-freiburg.de/api}
+        NEXT_TELEMETRY_DISABLED: 1
+    ports:
+      - ${FRONTEND_PORT:-12345}:80
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        UID: ${UID}
+        GID: ${GID}
+    container_name: backend
+    restart: unless-stopped
+    ports:
+      - ${BACKEND_PORT:-12346}:8000
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./file_storage:/app/file_storage
+    environment:
+      - DATABASE_URL=sqlite:////app/data/database.db
+      - FILE_STORAGE_PATH=file_storage
+      - LOG_LEVEL=INFO
+      - LOG_FILE_PATH=/logs/app.log
