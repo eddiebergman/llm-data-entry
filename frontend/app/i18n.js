@@ -21,7 +21,7 @@ i18n.use(initReactI18next).init({
         failedToRetrieveChats:
           "Failed to retrieve chats, please try again later!",
         placeholderHuman1: "Question...?",
-        placeholderBot1: "What would you be a good AI-ChatBot reply?",
+        placeholderBot1: "What would be a good AI-ChatBot reply?",
         initialHelpMessage1:
           "The University of Freiburg would like to train an AI chatbot to make it easier to answer questions about the university! To make this possible and to make the AI chatbot as helpful as possible, the university needs chat examples.\n\nThere will be two chatbots: one for internal use and one for external use. The internal chatbot will be optimized for data from the intranet that should only be accessible to university employees, such as internal university regulations or certain forms from the A-Z. External chats should only concern information that is publicly available, e.g. questions from potential students or press representatives.\n\nEnter a question below to get started! After you hit the enter key, you will be asked what you think an ideal answer would be from an AI chatbot. After you're done, you can submit your chat as either internal or external, or add more messages to create a dialog. You can change or delete your chat at any time.",
         helpUserkey:
