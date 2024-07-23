@@ -45,10 +45,12 @@ export function ChatEntry({ selected, chat }: ChatEntryProps) {
   }
   function deleteChat() {
     dispatch({ type: "delete-chat", uuid: chat.uuid });
-    deleteChatEndpoint(chat).catch(() => {
-      showError("Failed to delete chat remotely, please try again later!");
-      dispatch({ type: "update-chat", chat: chat });
-    });
+    if (chat.status !== "created") {
+      deleteChatEndpoint(chat).catch(() => {
+        showError("Failed to delete chat remotely, please try again later!");
+        dispatch({ type: "update-chat", chat: chat });
+      });
+    }
   }
 
   const bar = (
