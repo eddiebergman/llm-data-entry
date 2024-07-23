@@ -25,7 +25,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
   const { t } = useTranslation();
   const [state, dispatch] = useContext(StateContext);
   const textAreaRefs = useRef<Array<RefObject<HTMLTextAreaElement>>>(
-    [...Array(chat.messages.length)].map(() => React.createRef())
+    [...Array(chat.messages.length)].map(() => React.createRef()),
   );
 
   // Auto-focus first message if it's the only one
@@ -53,7 +53,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
     if (!where) {
       console.error(
         "Should not have synced a chat with no submission location!",
-        chat
+        chat,
       );
       return;
     }
@@ -78,10 +78,18 @@ export default function ChatView({ chat }: { chat: Chat }) {
   }
 
   function addNewMessage() {
-    setChat({
-      ...chat,
-      messages: [...chat.messages, { role: newMsgRole, content: "" }],
-    });
+    if (chat.title === "" && chat.messages.length === 1) {
+      setChat({
+        ...chat,
+        title: chat.messages[0].content,
+        messages: [...chat.messages, { content: "", role: "bot" }],
+      });
+    } else {
+      setChat({
+        ...chat,
+        messages: [...chat.messages, { role: newMsgRole, content: "" }],
+      });
+    }
   }
 
   function deleteMessage(msgIx: number) {
@@ -93,20 +101,11 @@ export default function ChatView({ chat }: { chat: Chat }) {
 
   function onEnterPressedInMsg(
     e: React.KeyboardEvent<HTMLTextAreaElement>,
-    msgIndex: number
+    msgIndex: number,
   ) {
     if (e.shiftKey || e.ctrlKey) return;
     e.preventDefault();
     if (e.repeat) return;
-
-    if (msgIndex === 0 && chat.title === "" && chat.messages.length === 1) {
-      setChat({
-        ...chat,
-        title: chat.messages[0].content,
-        messages: [...chat.messages, { content: "", role: "bot" }],
-      });
-      return;
-    }
 
     const nxtIndex = msgIndex + 1;
     if (nxtIndex >= chat.messages.length) {
@@ -165,8 +164,8 @@ export default function ChatView({ chat }: { chat: Chat }) {
           msgIndex === 0
             ? t("placeholderHuman1")
             : msgIndex === 1
-            ? t("placeholderBot1")
-            : ""
+              ? t("placeholderBot1")
+              : ""
         }
         // If last message
         showDelete={
@@ -228,7 +227,7 @@ export default function ChatView({ chat }: { chat: Chat }) {
     >
       <button
         className={"flex flex-row btn btn-block btn-sm btn-info btn-outline".concat(
-          syncButtonStyle
+          syncButtonStyle,
         )}
       >
         <MdCloudSync className={`inline text-lg`} />
