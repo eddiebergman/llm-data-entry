@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { FaExternalLinkAlt } from "react-icons/fa";
 import Feedback from "./feedback";
 import { useState } from "react";
 
@@ -15,15 +16,73 @@ const LOGO = (
   </svg>
 );
 
+function PolicyContent({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  if (!isOpen) {
+    return null;
+  }
+  return (
+    <div className="fixed inset-0 bg-black w-full bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg px-8 w-2/3 h-5/6 flex flex-col">
+        <div className="flex flex-row justify-between mt-4">
+          <div className="space-x-4 text-xl">
+            <a
+              href="https://uni-freiburg.de/zuv/datenschutzerklaerung/"
+              className="link-info underline"
+            >
+              <FaExternalLinkAlt className="pr-2 inline" />
+              datenschutzerklaerung
+            </a>
+            <a
+              href="https://uni-freiburg.de/zuv/impressum/"
+              className="link-info underline"
+            >
+              <FaExternalLinkAlt className="pr-2 inline" />
+              impressum
+            </a>
+          </div>
+          <button
+            className="btn btn-outline btn-error btn-sm"
+            onClick={onClose}
+          >
+            {t("close")}
+          </button>
+        </div>
+        <div className="divider divider-info"></div>
+        <div className="overflow-y-auto mt-2 flex-grow">
+          <p
+            style={{ whiteSpace: " pre-wrap", wordWrap: "break-word" }}
+            className="text-lg leading-relaxed"
+          >
+            {t("policy")}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Footer() {
-  const { i18n } = useTranslation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { i18n, t } = useTranslation();
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
   return (
-    <div className="h-full flex flex-row w-full justify-start">
+    <div className="h-full flex flex-row w-full justify-between">
       <div className="h-full">{LOGO}</div>
-      <div className="flex-grow flex-1"></div>
-      <div className="flex-none space-x-2 items-center">
+      <button
+        onClick={() => setIsPolicyModalOpen(!isPolicyModalOpen)}
+        className="btn bg-base-300 btn-sm"
+      >
+        {t("privacy-policy")}
+      </button>
+      <div className="space-x-2 items-center">
         <select
           className="select select-bordered select-info select-xs"
           onChange={(e) => i18n.changeLanguage(e.target.value)}
@@ -33,13 +92,20 @@ export default function Footer() {
           <option value="de">Deutsch</option>
         </select>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsFeedbackModalOpen(true)}
           className="btn bg-base-300 btn-sm"
         >
-          Feedback
+          {t("feedback")}
         </button>
       </div>
-      <Feedback isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <Feedback
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+      />
+      <PolicyContent
+        isOpen={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+      />
     </div>
   );
 }
