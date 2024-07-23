@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 
 import ChatHistory from "./chatHistory";
@@ -27,7 +27,6 @@ export default function Sidebar() {
       </button>
     </div>
   );
-
   const userBar = (
     <div className="flex-none mb-4 w-full">
       <UserBar />

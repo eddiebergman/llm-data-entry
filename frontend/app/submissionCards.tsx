@@ -6,7 +6,7 @@ export function CardInternal({ submit }: { submit: () => void }) {
   return (
     <div className="card bg-base-100 w-full shadow-xl transition hover:scale-105">
       <div className="card-body">
-        <h2 className="card-title">{t("internal")}</h2>
+        <h2 className="card-title">{t("internalCardTitle")}</h2>
         <p>{t("internalHelpDialogue")}</p>
         <button
           className="btn btn-info btn-sm btn-outline"
@@ -26,7 +26,7 @@ export function CardExternal({ submit }: { submit: () => void }) {
   return (
     <div className="card bg-base-100 w-full shadow-xl transition hover:scale-105">
       <div className="card-body">
-        <h2 className="card-title">{t("external")}</h2>
+        <h2 className="card-title">{t("externalCardTitle")}</h2>
         <p>{t("externalHelpDialogue")}</p>
         <button
           className="btn btn-info btn-sm btn-outline"

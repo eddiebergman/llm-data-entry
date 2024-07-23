@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import Feedback from "./feedback";
+import { RxQuestionMarkCircled } from "react-icons/rx";
 import { useState } from "react";
 
 const LOGO = (
@@ -68,20 +69,58 @@ function PolicyContent({
   );
 }
 
+function ShowHelp({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black w-screen bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg px-8 w-2/3 flex flex-col">
+        <div className="flex flex-row justify-between mt-4">
+          <button
+            className="btn btn-outline btn-error btn-sm"
+            onClick={onClose}
+          >
+            {t("close")}
+          </button>
+        </div>
+        <div className="divider divider-info"></div>
+        <div className="mb-8">
+          <p
+            style={{ whiteSpace: " pre-wrap", wordWrap: "break-word" }}
+            className="text-lg leading-relaxed"
+          >
+            {t("initialHelpMessage1")}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Footer() {
   const { i18n, t } = useTranslation();
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   return (
     <div className="h-full flex flex-row w-full justify-between">
-      <div className="h-full">{LOGO}</div>
       <button
         onClick={() => setIsPolicyModalOpen(!isPolicyModalOpen)}
         className="btn bg-base-300 btn-sm"
       >
         {t("privacy-policy")}
       </button>
+      <div className="h-full">{LOGO}</div>
       <div className="space-x-2 items-center">
         <select
           className="select select-bordered select-info select-xs"
@@ -97,6 +136,13 @@ export default function Footer() {
         >
           {t("feedback")}
         </button>
+        <button
+          onClick={() => setIsHelpOpen(true)}
+          className="btn bg-base-300 btn-sm"
+        >
+          {t("help")}
+          <RxQuestionMarkCircled />
+        </button>
       </div>
       <Feedback
         isOpen={isFeedbackModalOpen}
@@ -106,6 +152,7 @@ export default function Footer() {
         isOpen={isPolicyModalOpen}
         onClose={() => setIsPolicyModalOpen(false)}
       />
+      <ShowHelp isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 }

@@ -7,8 +7,11 @@ i18n.use(initReactI18next).init({
       translation: {
         newChat: "New Chat",
         copied: "copied!",
+        help: "Help",
         internal: "Internal",
         external: "External",
+        internalCardTitle: "Submit for internal Chatbot",
+        externalCardTitle: "Submit for external Chatbot",
         addMessage: "Add message",
         couldNotCopy: "Could not copy!",
         failedToSync: "Failed to sync, please try again later!",
@@ -44,8 +47,11 @@ i18n.use(initReactI18next).init({
       translation: {
         newChat: "Neuer Chat",
         copied: "kopiert!",
+        help: "Helfen",
         addMessage: "Nachricht hinzufügen",
         internal: "Intern",
+        internalCardTitle: "Einrechen für intern Chatbot",
+        externalCardTitle: "Einreichen für externe Chatbot",
         external: "Extern",
         internalHelpDialogue:
           "Interne Chats können sensible Informationen über interne Prozesse beinhalten.",
