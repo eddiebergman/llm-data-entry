@@ -51,8 +51,8 @@ i18n.use(initReactI18next).init({
         help: "Helfen",
         addMessage: "Nachricht hinzufügen",
         internal: "Intern",
-        internalCardTitle: "Einrechen für intern Chatbot",
-        externalCardTitle: "Einreichen für externe Chatbot",
+        internalCardTitle: "Einreichen für internen Chatbot",
+        externalCardTitle: "Einreichen für externen Chatbot",
         external: "Extern",
         internalHelpDialogue:
           "Interne Chats können sensible Informationen über interne Prozesse beinhalten.",
